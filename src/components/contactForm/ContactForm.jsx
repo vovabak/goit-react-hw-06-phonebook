@@ -1,6 +1,8 @@
+import { useSelector, useDispatch } from "react-redux";
+import { getContacts, addContact } from '../../redux';
 import { Formik } from 'formik';
 import { object, string } from 'yup';
-import PropTypes from 'prop-types';
+import { nanoid } from 'nanoid';
 import { Label, Button, FormStyled as Form, Input } from './ContactForm.styled';
 
 
@@ -14,13 +16,26 @@ let signupSchema = object({
   number: string().required(), 
 });
 
-export const ContactForm = ({ onSubmit }) => {    
-   
-    const handleSubmit = (values, { resetForm }) => {           
+export const ContactForm = () => {
+    const dispatch = useDispatch();
+    const contacts = useSelector(getContacts);
+    
+    const handleSubmit = (values, { resetForm }) => {
+        
+        const { name, number } = values;
+        const normalizedName = name.toLowerCase().trim();
 
-        const { name, number } = values;        
-   
-        onSubmit(name, number);
+        if (contacts.find(contact => contact.name.toLowerCase() === normalizedName)) {
+            alert(`${name.trim()} is allready in contacts`)
+            return
+        }
+        
+        dispatch(addContact({
+            id: nanoid(),
+            name: name.trim(),
+            number,
+            })
+        )
         
         resetForm();
     }
@@ -53,8 +68,4 @@ export const ContactForm = ({ onSubmit }) => {
             <Button type="submit">Add contact</Button>
         </Form>
     </Formik>
-}
-
-ContactForm.propTypes = {
-    onSubmit: PropTypes.func.isRequired,
 }
